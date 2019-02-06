@@ -19,9 +19,9 @@ extern double gamma;
 
 
 /* ===================================================================== */
-void init_states(state *left, state *right, state* starL, state* starR){
+void init_pstates(pstate *left, pstate *right, pstate* starL, pstate* starR){
 /* ===================================================================== */
-  /* This function initializes the states.                               */
+  /* This function initializes the pstates.                               */
   /*---------------------------------------------------------------------*/
 
   left->rho  = 0;
@@ -48,9 +48,18 @@ void init_states(state *left, state *right, state* starL, state* starR){
 
 
 /* ========================================= */
-double soundspeed(state* s){
+double soundspeed(pstate* s){
 /* ========================================= */
   /* compute sound speed of ideal gas        */
   /*-----------------------------------------*/
   return(sqrt(gamma * s->p / s->rho));
+}
+
+
+/* ========================================= */
+double energy(pstate* s){
+/* ========================================= */
+  /* compute total energy of a state         */
+  /*-----------------------------------------*/
+  return 0.5*s->rho*s->u*s->u +s->p/(gamma-1);
 }

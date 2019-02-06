@@ -5,20 +5,20 @@
 #include "gas.h"
 
 
-extern int check_vacuum(state *left, state *right);
-extern void compute_star_state(state *left, state *right, state* starL, state* starR);
-extern double compute_pstar(state *left, state *right);
-extern double fp(double pguess, state *s, double gamma, double A, double B, double a);
-extern double dfpdp(double pguess, state *s, double gamma, double A, double B, double a);
+extern int check_vacuum(pstate *left, pstate *right);
+extern void compute_star_pstate(pstate *left, pstate *right, pstate* starL, pstate* starR);
+extern double compute_pstar(pstate *left, pstate *right);
+extern double fp(double pguess, pstate *s, double gamma, double A, double B, double a);
+extern double dfpdp(double pguess, pstate *s, double gamma, double A, double B, double a);
 extern double fpfull(double fpL, double fpR, double delta_u);
 extern double dfpdpfull(double dfpdpL, double dfpdpR);
-extern double rho_star(state *s, state *star);
-extern state compute_riemann(state* left, state* right, state* starL, state* starR);
-extern state compute_riemann_vacuum(state* left, state* right);
-extern double rho_fanL(state* s);
-extern double u_fanL(state* s);
-extern double p_fanL(state* s);
-extern double rho_fanR(state* s);
-extern double u_fanR(state* s);
-extern double p_fanR(state* s);
+extern double rho_star(pstate *s, pstate *star);
+extern void compute_riemann(pstate* left, pstate* right, pstate* starL, pstate* starR, pstate* intercell);
+extern void compute_riemann_vacuum(pstate* left, pstate* right, pstate* intercell);
+extern double rho_fanL(pstate* s);
+extern double u_fanL(pstate* s);
+extern double p_fanL(pstate* s);
+extern double rho_fanR(pstate* s);
+extern double u_fanR(pstate* s);
+extern double p_fanR(pstate* s);
 #endif

@@ -6,8 +6,8 @@
 #include "params.h"
 
 extern void read_cmdlineargs(int argc, char* argv[]);
-extern void read_ic(state* left, state* right);
+extern void read_ic(pstate* left, pstate* right);
 extern void read_paramfile();
-extern void write_output(int step, double t, double* x, double* rho, double* u, double* p);
+void write_output(int step, double t, double* x, pstate* s);
 
 #endif

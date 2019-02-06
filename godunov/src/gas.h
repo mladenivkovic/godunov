@@ -12,12 +12,22 @@ typedef struct {
   double rho;
   double u;
   double p;
-} state;
+} pstate; /*primitive state*/
+
+typedef struct {
+  double rho;
+  double rhou;
+  double E;
+} cstate; /*conserved state*/
+
+
+
 
 
 // extern void init_constants(constants* c);
-extern void init_states(state *left, state *right, state* starL, state* starR);
-extern double soundspeed(state* s);
+extern void init_pstates(pstate *left, pstate *right, pstate* starL, pstate* starR);
+extern double soundspeed(pstate* s);
+extern double energy(pstate* s);
 
 
 #endif

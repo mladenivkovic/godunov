@@ -1,7 +1,9 @@
-// parameter file for riemann program
+// parameter file for godunov program
 
 verbose = 1
-nx = 10
+nx = 100
 gamma = 1.4
-nsteps = 8
-tmax = 1
+ccfl = 0.1
+nsteps = 0
+tmax = 0.2
+foutput = 100

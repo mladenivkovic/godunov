@@ -20,7 +20,7 @@ extern params pars;
 void read_cmdlineargs(int argc, char* argv[]){
 /* ======================================================== */
   /* This function reads in the command line arguments and  */
-  /* stores them in the globalparams struct                 */
+  /* stores them in the params struct                       */
   /*--------------------------------------------------------*/
 
   if (argc < 3){
@@ -39,7 +39,7 @@ void read_cmdlineargs(int argc, char* argv[]){
 
 
 /* ======================================================== */
-void read_ic(state* left, state* right){
+void read_ic(pstate* left, pstate* right){
 /* ======================================================== */
   /* Read in initial conditions file, store read states.    */
   /*--------------------------------------------------------*/
@@ -185,6 +185,12 @@ void read_paramfile(){
     else if (strcmp(varname, "nx")==0){
       pars.nx = atoi(varvalue);
     }
+    else if (strcmp(varname, "foutput")==0){
+      pars.foutput = atoi(varvalue);
+    }
+    else if (strcmp(varname, "ccfl")==0){
+      pars.ccfl = atof(varvalue);
+    }
     else if (strcmp(varname, "gamma")==0){
       gamma = atof(varvalue);
     }
@@ -207,11 +213,11 @@ void read_paramfile(){
 
 
 
-/* ================================================================================================= */
-void write_output(int step, double t, double* x, double* rho, double* u, double* p){
-/* ================================================================================================= */
-  /* Write output of step at time t.                                                                 */
-  /*-------------------------------------------------------------------------------------------------*/
+/* ===================================================== */
+void write_output(int step, double t, double* x, pstate* s){
+/* ===================================================== */
+  /* Write output of step at time t.                     */
+  /*-----------------------------------------------------*/
 
 
   /*-------------------*/
@@ -267,8 +273,8 @@ void write_output(int step, double t, double* x, double* rho, double* u, double*
   FILE *outfilep = fopen(filename, "w");
   fprintf(outfilep, "t = %10.4lf\n", t);
   fprintf(outfilep, "%12s %12s %12s %12s\n", "x", "rho", "u", "p");
-  for (int i=0; i<pars.nx; i++){
-    fprintf(outfilep, "%12.5lf %12.5lf %12.5lf %12.5lf\n", x[i], rho[i], u[i], p[i]);
+  for (int i=2; i<pars.nx+2; i++){
+    fprintf(outfilep, "%12.5lf %12.5lf %12.5lf %12.5lf\n", x[i], s[i].rho, s[i].u, s[i].p);
   }
 
   fclose(outfilep);

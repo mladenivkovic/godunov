@@ -21,10 +21,11 @@ void init_params(){
     pars.datafilename[i] = 0;
   }
   pars.nsteps = 0;
+  pars.foutput = 0;
   pars.tmax = 1;
   pars.nx = 100;
   pars.ccfl = 0.9;
-  pars.twostate_ic = 1;
+  pars.twopstate_ic = 1;
 
 }
 
@@ -48,9 +49,10 @@ void print_params(){
   }
   printf("tmax:                    %g\n", pars.tmax);
   printf("nsteps:                  %d\n", pars.nsteps);
+  printf("foutput:                 %d\n", pars.foutput);
   printf("nx:                      %d\n", pars.nx);
-  printf("IC has only two states?  ");
-  if (pars.twostate_ic) {
+  printf("IC has only two pstates?  ");
+  if (pars.twopstate_ic) {
     printf("True\n");
   } else {
     printf("False\n");

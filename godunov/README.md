@@ -1,8 +1,7 @@
-Exact Riemann Solver
+Godunov Solver
 ========================
 
-Computes all primitive variables for an ideal gas of a Riemann problem using an
-exact Riemann solver for given initial conditions.
-This is the full Riemann solver that can handle both vacuum and non-vacuum ICs.
-If parameters 'tmax' and 'nsteps' are given in the parameter file, it will
-create 'nsteps' output in linear spacings from 0 to 'tmax' in arbitrary units.
+Simple 1D upwind-differencing godunov solver using an exact Riemann solver.
+Something with the vacuum doesn't work properly yet, but the rest looks ok.
+Created such that new Riemann solvers or differencing schemes can be easily
+added.
