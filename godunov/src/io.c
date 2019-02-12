@@ -213,47 +213,70 @@ void read_paramfile(){
 
 
 
-/* ===================================================== */
+/* ========================================================= */
 void write_output(int step, double t, double* x, pstate* s){
-/* ===================================================== */
-  /* Write output of step at time t.                     */
-  /*-----------------------------------------------------*/
+/* ========================================================= */
+  /* Write output of step at time t.                         */
+  /*---------------------------------------------------------*/
+
+  char filename[MAX_FNAME_SIZE] = ""; 
 
 
-  /*-------------------*/
-  /* Generate filename */
-  /*-------------------*/
+  if (strlen(pars.outputfilename)==0) {
+    /*---------------------------------------------------------*/
+    /* Generate output directory filename based on ic filename */
+    /*---------------------------------------------------------*/
 
-  int dot = 0;
-  for (int i = strlen(pars.datafilename); i > 0; i--){
-    if (pars.datafilename[i] == '.'){
-      dot = i;
-      break;
+    printf("Generating outputfilename step %d\n", step);
+
+    int dot = 0;
+    /* extract filename without suffix */
+    for (int i = strlen(pars.datafilename); i > 0; i--){
+      if (pars.datafilename[i] == '.'){
+        dot = i;
+        break;
+      }
     }
-  }
 
-  int slash = 0;
-  for (int i = 0; i < (int) strlen(pars.datafilename); i++){
-    if (pars.datafilename[i] == '/'){
-      slash = i;
+    int slash = 0;
+    /* remove possible directories paths from filename*/
+    for (int i = 0; i < (int) strlen(pars.datafilename); i++){
+      if (pars.datafilename[i] == '/'){
+        slash = i;
+      }
     }
+
+    if (dot==0) dot = strlen(pars.datafilename);
+    if (slash > 0) slash += 1;
+
+    /* now copy the exact part that you want into filename string */
+    char fname_extract[MAX_FNAME_SIZE] = "";
+    strncpy(fname_extract, pars.datafilename+slash, dot-slash);
+
+
+#if RIEMANN==EXACT
+    strcpy(filename, "EXACT");
+#else
+    strcpy(filename, "NONE");
+#endif
+    
+    /* create output parent directory */
+    mkdir(filename, 0777);
+
+    strcat(filename, "/");
+    strcat(filename, fname_extract);
+
+    /* create output directory */
+    mkdir(filename, 0777);
+
+    strcat(filename, "/");
+    strcat(filename, fname_extract);
+
+    strcpy(pars.outputfilename,filename);
   }
-
-  if (dot==0) dot = strlen(pars.datafilename);
-  if (slash > 0) slash += 1;
-
-  char filename[MAX_FNAME_SIZE] = "";
-  strncpy(filename, pars.datafilename+slash, dot-slash);
-
-  /* create output directory */
-  mkdir(filename, 0777);
-
-  char fcpy[MAX_FNAME_SIZE] = "";
-  strcpy(fcpy, filename);
-  strcat(filename, "/");
-  strcat(filename, fcpy);
-
-
+  else{
+    strcpy(filename, pars.outputfilename);
+  }
 
 
   char sstep[3];

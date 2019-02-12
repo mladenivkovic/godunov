@@ -17,6 +17,7 @@ typedef struct {
   int twopstate_ic;                   /* whether IC are left/right state only */
   char paramfilename[MAX_FNAME_SIZE]; /* parameter filename                   */
   char datafilename[MAX_FNAME_SIZE];  /* IC data filename                     */
+  char outputfilename[MAX_FNAME_SIZE];/* Output file name template            */
 } params;
 
 

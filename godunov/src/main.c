@@ -137,8 +137,13 @@ int main(int argc, char* argv[]){
       if (pars.verbose) printf("Writing output\n");
       write_output(outcount, t, x, w_old);
     }
+  }
 
 
+  if (outputstep>0){
+    outcount += 1;
+    if (pars.verbose) printf("Writing final output\n");
+    write_output(outcount, t, x, w_old);
   }
 
 

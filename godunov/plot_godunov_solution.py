@@ -16,6 +16,7 @@ usage="""
 # globals
 
 srcdir = ''
+filebase = ''
 noutputs = 0
 
 t = 0
@@ -32,13 +33,13 @@ def read_cmdlineargs():
     Read in source directory from cmdline
     """
 
-    global srcdir
+    global srcdir, filebase
     try:
         srcdir = sys.argv[1];
     except IndexError:
         print(usage)
         quit()
-    if srcdir.strip() == '-h':
+    if srcdir.strip() == '-h' or srcdir.strip() == '--help':
         print(usage)
         quit()
     else:
@@ -50,8 +51,13 @@ def read_cmdlineargs():
         else:
             # remove whitespaces and trailing slash
             srcdir = srcdir.strip()
+            srcdir = os.path.dirname(srcdir)
+            junk, filebase = os.path.split(srcdir)
+
             if srcdir[-1] == '/':
                 srcdir = srcdir[:-1]
+
+        
 
     return
 
@@ -69,8 +75,9 @@ def get_noutputs():
     for f in allfiles:
         # look for '.out' in filename
         if f.endswith('.out'):
-            if (f.startswith(srcdir)):
+            if (f.startswith(filebase)):
                 noutputs += 1
+    print("noutputs", noutputs, "in srcdir", srcdir, "for filebase", filebase)
 
     return
 
@@ -85,7 +92,7 @@ def read_data(out):
 
     global t, x, rho, u, p
 
-    fname = os.path.join(srcdir, srcdir + "-" + str(out).zfill(2) + '.out')
+    fname = os.path.join(srcdir, filebase + "-" + str(out).zfill(2) + '.out')
     print("Plotting", fname)
 
     x, rho, u, p = np.loadtxt(fname, dtype=np.float, skiprows=2, unpack = True)
@@ -134,7 +141,7 @@ def plot_results(out):
     fig.suptitle(srcdir+" at t = %5.3f" % t)
 
 
-    fname = os.path.join(srcdir, srcdir + "-" + str(out).zfill(2) + '.png')
+    fname = os.path.join(srcdir, filebase + "-" + str(out).zfill(2) + '.png')
     plt.tight_layout(rect=(0,0,1,0.95))
     plt.savefig(fname, dpi=300)
     plt.close()

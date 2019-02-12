@@ -16,10 +16,10 @@ void init_params(){
   /*------------------------------------------*/
 
   pars.verbose = 0;
-  for (int i = 0; i<MAX_FNAME_SIZE; i++){
-    pars.paramfilename[i] = 0;
-    pars.datafilename[i] = 0;
-  }
+  strcpy(pars.paramfilename, "");
+  strcpy(pars.datafilename, "");
+  strcpy(pars.outputfilename, "");
+
   pars.nsteps = 0;
   pars.foutput = 0;
   pars.tmax = 1;
@@ -51,7 +51,7 @@ void print_params(){
   printf("nsteps:                  %d\n", pars.nsteps);
   printf("foutput:                 %d\n", pars.foutput);
   printf("nx:                      %d\n", pars.nx);
-  printf("IC has only two pstates?  ");
+  printf("IC has only two pstates? ");
   if (pars.twopstate_ic) {
     printf("True\n");
   } else {
