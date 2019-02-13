@@ -3,8 +3,17 @@
 #include "gas.h"
 #include "godunov.h"
 #include "params.h"
-#if RIEMANN==EXACT
+
+#ifdef RIEMANN_EXACT
 #include "riemann-exact.h"
+#elif defined RIEMANN_TRRS
+#include "riemann-trrs.h"
+#elif defined RIEMANN_TSRS
+#include "riemann-tsrs.h"
+#elif defined RIEMANN_HLL
+#include "riemann-hll.h"
+#elif defined RIEMANN_HLLC
+#include "riemann-hllc.h"
 #endif
 
 extern pstate* w_old;

@@ -6,8 +6,17 @@
 
 #include "gas.h"
 #include "params.h"
-#if RIEMANN==EXACT
+
+#ifdef RIEMANN_EXACT
 #include "riemann-exact.h"
+#elif defined RIEMANN_TRRS
+#include "riemann-trrs.h"
+#elif defined RIEMANN_TSRS
+#include "riemann-tsrs.h"
+#elif defined RIEMANN_HLL
+#include "riemann-hll.h"
+#elif defined RIEMANN_HLLC
+#include "riemann-hllc.h"
 #endif
 
 #define MAX_LINE_SIZE 200
@@ -254,8 +263,16 @@ void write_output(int step, double t, double* x, pstate* s){
     strncpy(fname_extract, pars.datafilename+slash, dot-slash);
 
 
-#if RIEMANN==EXACT
+#ifdef RIEMANN_EXACT
     strcpy(filename, "EXACT");
+#elif defined RIEMANN_TRRS
+    strcpy(filename, "TRRS");
+#elif defined RIEMANN_TSRS
+    strcpy(filename, "TSRS");
+#elif defined RIEMANN_HLL
+    strcpy(filename, "HLL");
+#elif defined RIEMANN_HLLC
+    strcpy(filename, "HLLC");
 #else
     strcpy(filename, "NONE");
 #endif

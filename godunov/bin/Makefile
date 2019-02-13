@@ -11,16 +11,28 @@
 EXEC=godunov  # executable name
 SRCDIR=../src
 
-RIEMANN=EXACT
+RIEMANN=TRRS
 
 RIEMANNFILE=riemann.o
 ifeq ($(RIEMANN), EXACT)
 	RIEMANNFILE=riemann-exact.o
 endif
+ifeq ($(RIEMANN), TRRS)
+	RIEMANNFILE=riemann-trrs.o
+endif
+ifeq ($(RIEMANN), TSRS)
+	RIEMANNFILE=riemann-tsrs.o
+endif
+ifeq ($(RIEMANN), HLL)
+	RIEMANNFILE=riemann-hll.o
+endif
+ifeq ($(RIEMANN), HLLC)
+	RIEMANNFILE=riemann-hllc.o
+endif
 
 
 
-DEFINES=-DRIEMANN=$(RIEMANN)
+DEFINES=-D RIEMANN_$(RIEMANN)
 
 #==================================
 # COMPILER OPTIONS AND DIRECTIVES

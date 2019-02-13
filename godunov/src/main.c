@@ -15,8 +15,17 @@
 #include "godunov.h"
 #include "io.h"
 #include "params.h"
-#if RIEMANN==EXACT
+
+#ifdef RIEMANN_EXACT
 #include "riemann-exact.h"
+#elif defined RIEMANN_TRRS
+#include "riemann-trrs.h"
+#elif defined RIEMANN_TSRS
+#include "riemann-tsrs.h"
+#elif defined RIEMANN_HLL
+#include "riemann-hll.h"
+#elif defined RIEMANN_HLLC
+#include "riemann-hllc.h"
 #endif
 
 double gamma = 1.4;   /* Ratio of specific heats; Adiabatic exponent... */
@@ -75,6 +84,20 @@ int main(int argc, char* argv[]){
   u_new = malloc((pars.nx+4)*sizeof(cstate));
   u_intercell = malloc((pars.nx+4)*sizeof(cstate));
   flux = malloc((pars.nx+4)*sizeof(cstate));
+
+
+#ifdef RIEMANN_EXACT
+  printf("Using exact Riemann solver.\n");
+#elif defined RIEMANN_TRRS
+  printf("Using TRRS Riemann solver.\n");
+#elif defined RIEMANN_TSRS
+  printf("Using TSRS Riemann solver.\n");
+#elif defined RIEMANN_HLL
+  printf("Using HLL Riemann solver.\n");
+#elif defined RIEMANN_HLLC
+  printf("Using HLLC Riemann solver.\n");
+#endif
+
 
   for (int i=0; i<pars.nx+4; i++){
     if (x[i]<0.0) {
