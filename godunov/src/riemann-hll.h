@@ -4,21 +4,9 @@
 #define RIEMANN_HLL_H
 #include "gas.h"
 
-
-extern int check_vacuum(pstate *left, pstate *right);
-extern void compute_star_pstate(pstate *left, pstate *right, pstate* starL, pstate* starR);
-extern double compute_pstar(pstate *left, pstate *right);
-extern double fp(double pguess, pstate *s, double gamma, double A, double B, double a);
-extern double dfpdp(double pguess, pstate *s, double gamma, double A, double B, double a);
-extern double fpfull(double fpL, double fpR, double delta_u);
-extern double dfpdpfull(double dfpdpL, double dfpdpR);
-extern double rho_star(pstate *s, pstate *star);
 extern void compute_riemann(pstate* left, pstate* right, pstate* starL, pstate* starR, pstate* intercell);
-extern void compute_riemann_vacuum(pstate* left, pstate* right, pstate* intercell);
-extern double rho_fanL(pstate* s);
-extern double u_fanL(pstate* s);
-extern double p_fanL(pstate* s);
-extern double rho_fanR(pstate* s);
-extern double u_fanR(pstate* s);
-extern double p_fanR(pstate* s);
+extern void compute_fluxes();
+extern void compute_uhll(cstate* left, cstate* right, cstate* u_hll, double SL, double SR);
+extern void compute_wave_speeds(cstate left, cstate right,  double* SL, double* SR);
+extern double Fhll(double ul, double ur, double fl, double fr, double SL, double SR);
 #endif

@@ -11,7 +11,7 @@
 EXEC=godunov  # executable name
 SRCDIR=../src
 
-RIEMANN=TRRS
+RIEMANN=EXACT
 
 RIEMANNFILE=riemann.o
 ifeq ($(RIEMANN), EXACT)
@@ -40,7 +40,7 @@ DEFINES=-D RIEMANN_$(RIEMANN)
 
 
 #Compiler to use
-CC=gcc -I$(IDIR)
+CC=gcc -I$(IDIR) -static
 
 
 # flags for gcc compiler

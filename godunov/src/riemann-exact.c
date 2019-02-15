@@ -1,6 +1,7 @@
 #include "params.h"
 #include "gas.h"
 #include "riemann-exact.h"
+#include "godunov.h"
 
 #include <stdlib.h>
 #include <stdio.h>
@@ -8,9 +9,64 @@
 
 extern double gamma;
 extern params pars;
+
 /* extern double* x; */
+extern pstate* w_old;
+extern pstate* w_intercell;
+extern cstate* flux;
 /* extern double t; */
-extern double vmax;
+
+
+/* =================================== */
+void compute_fluxes(){
+/* =================================== */
+  /* compute the intercell fluxes      */
+  /* fluxes are for conserved          */
+  /* variables, not primitives!!!!     */
+  /*-----------------------------------*/
+
+  compute_intercell_states();
+
+  for (int i=0; i<pars.nx+NBCT; i++){
+    pstate ic = w_intercell[i];
+
+    flux[i].rho = ic.rho * ic.u;
+    flux[i].rhou = ic.rho * ic.u*ic.u + ic.p;
+    flux[i].E = ic.u*(energy(&ic) + ic.p);
+  }
+}
+
+
+/* ===================================== */
+void compute_intercell_states(){
+/* ===================================== */
+  /* Compute intercell states, based on  */
+  /* whether we have vacuum or not       */
+  /* first compute primitives, then      */
+  /* convert to conserved variables      */
+  /*-------------------------------------*/
+
+  pstate left, right, starL, starR;
+
+  for(int i = NBC; i<pars.nx+NBCT; i++){
+    left = w_old[i-1];
+    right = w_old[i];
+
+    int vacuum = check_vacuum(&left, &right);
+
+    if (vacuum){
+      /* printf("calling vacuum for x=%lf\n", x[i]); */
+      compute_riemann_vacuum(&left, &right, &w_intercell[i]);
+    }
+    else {
+      compute_star_pstate(&left, &right, &starL, &starR);
+      compute_riemann(&left, &right, &starL, &starR, &w_intercell[i]);
+    }
+  }
+}
+
+
+
 
 
 /* ====================================================== */
@@ -41,10 +97,11 @@ int check_vacuum(pstate *left, pstate *right){
 
 
 
+
 /* ========================================================================================== */
 void compute_star_pstate(pstate *left, pstate *right, pstate* starL, pstate* starR){
 /* ========================================================================================== */
-  /* computes the star pstate given the left and right pstates.                                 */
+  /* computes the star pstate given the left and right pstates.                               */
   /*------------------------------------------------------------------------------------------*/
 
   double AL = 2. / ((gamma + 1) * left->rho);
@@ -93,8 +150,8 @@ void compute_star_pstate(pstate *left, pstate *right, pstate* starL, pstate* sta
   starL->rho = rho_star(left,  starL);
   starR->rho = rho_star(right, starR);
   
-
 }
+
 
 
 
@@ -114,7 +171,6 @@ double rho_star(pstate *s, pstate *star){
     /* rare occasions */
     return s->rho * pow(pdiv, (1./gamma));
   }
-
 }
 
 
@@ -180,6 +236,129 @@ double dfpdp(double pguess, pstate *s, double gamma, double A, double B, double 
 
 
 
+
+
+
+/* ================================================================================================== */
+void compute_riemann(pstate* left, pstate* right, pstate* starL, pstate* starR, pstate* intercell){
+/* ================================================================================================== */
+  /* Compute the solution of the riemann problem at given time t for all x                            */
+  /*--------------------------------------------------------------------------------------------------*/
+
+  double S = 0;
+
+
+  if (S <= starL->u){
+    /*------------------------*/
+    /* We're on the left side */
+    /*------------------------*/
+    double al =  soundspeed(left);
+    if (starL->p <= left->p){
+      /*------------------*/
+      /* left rarefaction */
+      /*------------------*/
+      double SHL = left->u - al;    /* speed of head of left rarefaction fan */
+      if (S < SHL) {
+        /* we're outside the rarefaction fan */
+        intercell->rho = left->rho;
+        intercell->u = left->u;
+        intercell->p = left->p;
+      }
+      else {
+        double asl = soundspeed(starL);
+        double STL = starL->u - asl;  /* speed of tail of left rarefaction fan */
+        if (S < STL){
+          /* we're inside the fan */
+          intercell->rho = rho_fanL(left);
+          intercell->u = u_fanL(left);
+          intercell->p = p_fanL(left);
+        }
+        else{
+          /* we're in the star region */
+          intercell->rho = starL->rho;
+          intercell->u = starL->u;
+          intercell->p = starL->p;
+        }
+      }
+    }
+    else{
+      /*------------------*/
+      /* left shock       */
+      /*------------------*/
+      double SL  = left->u  - al*sqrt(0.5*((gamma+1) * starL->p/left->p + (gamma-1))/gamma); /* left shock speed */
+      if (S<SL){
+        /* we're outside the shock */
+        intercell->rho = left->rho;
+        intercell->u = left->u;
+        intercell->p = left->p;
+      }
+      else{
+        /* we're in the star region */
+        intercell->rho = starL->rho;
+        intercell->u = starL->u;
+        intercell->p = starL->p;
+      }
+    }
+  }
+  else{
+    /*-------------------------*/
+    /* We're on the right side */
+    /*-------------------------*/
+    double ar =  soundspeed(right);
+    if (starR->p <= right->p){
+      /*-------------------*/
+      /* right rarefaction */
+      /*-------------------*/
+      double SHR = right->u + ar;   /* speed of head of right rarefaction fan */
+      if (S > SHR) {
+        /* we're outside the rarefaction fan */
+        intercell->rho = right->rho;
+        intercell->u = right->u;
+        intercell->p = right->p;
+      }
+      else {
+        double asr = soundspeed(starR);
+        double STR = starR->u + asr;  /* speed of tail of right rarefaction fan */
+        if (S > STR){
+          /* we're inside the fan */
+          intercell->rho = rho_fanR(right);
+          intercell->u = u_fanR(right);
+          intercell->p = p_fanR(right);
+        }
+        else{
+          /* we're in the star region */
+          intercell->rho = starR->rho;
+          intercell->u = starR->u;
+          intercell->p = starR->p;
+        }
+      }
+    }
+    else{
+      /*------------------*/
+      /* right shock      */
+      /*------------------*/
+      double SR  = right->u + ar*sqrt(0.5*((gamma+1) * starR->p/right->p + (gamma-1))/gamma); /* right shock speed */
+      if (S>SR){
+        /* we're outside the shock */
+        intercell->rho = right->rho;
+        intercell->u = right->u;
+        intercell->p = right->p;
+      }
+      else{
+        /* we're in the star region */
+        intercell->rho = starR->rho;
+        intercell->u = starR->u;
+        intercell->p = starR->p;
+      }
+    }
+  }
+
+  return;
+}
+
+
+
+
 /* ================================================================================ */
 void compute_riemann_vacuum(pstate* left, pstate* right, pstate* intercell){
 /* ================================================================================ */
@@ -213,7 +392,6 @@ void compute_riemann_vacuum(pstate* left, pstate* right, pstate* intercell){
       intercell->p = right->p;
     }
 
-    if (fabs(SR) > vmax) vmax=fabs(SR);
   }
 
   else if (right->rho==0){
@@ -245,7 +423,6 @@ void compute_riemann_vacuum(pstate* left, pstate* right, pstate* intercell){
       intercell->p = left->p;
     }
 
-    if (fabs(SL) > vmax) vmax=fabs(SL);
   }
   else {
     /*------------------------*/
@@ -292,8 +469,6 @@ void compute_riemann_vacuum(pstate* left, pstate* right, pstate* intercell){
         intercell->p = right->p;
       }
 
-    if (fabs(SL) > vmax) vmax=fabs(SL);
-    if (fabs(SR) > vmax) vmax=fabs(SR);
     }
   }
 
@@ -301,129 +476,6 @@ void compute_riemann_vacuum(pstate* left, pstate* right, pstate* intercell){
 }
 
 
-
-
-
-
-/* ================================================================================================== */
-void compute_riemann(pstate* left, pstate* right, pstate* starL, pstate* starR, pstate* intercell){
-/* ================================================================================================== */
-  /* Compute the solution of the riemann problem at given time t for all x                            */
-  /*--------------------------------------------------------------------------------------------------*/
-
-  double S = 0;
-
-  if (S < starL->u){
-    /*------------------------*/
-    /* We're on the left side */
-    /*------------------------*/
-    double al =  soundspeed(left);
-    double asl = soundspeed(starL);
-    if (starL->p <= left->p){
-      /*------------------*/
-      /* left rarefaction */
-      /*------------------*/
-      double SHL = left->u - al;    /* speed of head of left rarefaction fan */
-      if (fabs(SHL) > vmax) vmax = fabs(SHL);
-      if (S < SHL) {
-        /* we're outside the rarefaction fan */
-        intercell->rho = left->rho;
-        intercell->u = left->u;
-        intercell->p = left->p;
-      }
-      else {
-        double STL = starL->u - asl;  /* speed of tail of left rarefaction fan */
-        if (S < STL){
-          /* we're inside the fan */
-          intercell->rho = rho_fanL(left);
-          intercell->u = u_fanL(left);
-          intercell->p = p_fanL(left);
-        }
-        else{
-          /* we're in the star region */
-          intercell->rho = starL->rho;
-          intercell->u = starL->u;
-          intercell->p = starL->p;
-        }
-      }
-    }
-    else{
-      /*------------------*/
-      /* left shock       */
-      /*------------------*/
-      double SL  = left->u  - al*sqrt(0.5*(gamma+1)/gamma * starL->p/left->p  + 0.5*(gamma-1)/gamma); /* left shock speed */
-      if (fabs(SL) > vmax) vmax = fabs(SL);
-      if (S<SL){
-        /* we're outside the shock */
-        intercell->rho = left->rho;
-        intercell->u = left->u;
-        intercell->p = left->p;
-      }
-      else{
-        /* we're in the star region */
-        intercell->rho = starL->rho;
-        intercell->u = starL->u;
-        intercell->p = starL->p;
-      }
-    }
-  }
-  else{
-    /*-------------------------*/
-    /* We're on the right side */
-    /*-------------------------*/
-    double ar =  soundspeed(right);
-    double asr = soundspeed(starR);
-    if (starR->p <= right->p){
-      /*-------------------*/
-      /* right rarefaction */
-      /*-------------------*/
-      double SHR = right->u + ar;   /* speed of head of right rarefaction fan */
-      if (fabs(SHR) > vmax) vmax = fabs(SHR);
-      if (S > SHR) {
-        /* we're outside the rarefaction fan */
-        intercell->rho = right->rho;
-        intercell->u = right->u;
-        intercell->p = right->p;
-      }
-      else {
-        double STR = starR->u + asr;  /* speed of tail of right rarefaction fan */
-        if (S > STR){
-          /* we're inside the fan */
-          intercell->rho = rho_fanR(right);
-          intercell->u = u_fanR(right);
-          intercell->p = p_fanR(right);
-        }
-        else{
-          /* we're in the star region */
-          intercell->rho = starR->rho;
-          intercell->u = starR->u;
-          intercell->p = starR->p;
-        }
-      }
-    }
-    else{
-      /*------------------*/
-      /* right shock      */
-      /*------------------*/
-      double SR  = right->u + ar*sqrt(0.5*(gamma+1)/gamma * starR->p/right->p + 0.5*(gamma-1)/gamma); /* right shock speed */
-      if (fabs(SR) > vmax) vmax = fabs(SR);
-      if (S>SR){
-        /* we're outside the shock */
-        intercell->rho = right->rho;
-        intercell->u = right->u;
-        intercell->p = right->p;
-      }
-      else{
-        /* we're in the star region */
-        intercell->rho = starR->rho;
-        intercell->u = starR->u;
-        intercell->p = starR->p;
-      }
-    }
-  }
-
-  return;
-}
 
 
 
@@ -434,7 +486,7 @@ double rho_fanL(pstate* s){
   /* Compute rho inside rarefaction fan */
   /* shortened version: S = x/t = 0     */
   /*------------------------------------*/
-  return s->rho * pow((2./(gamma+1) + (gamma-1)/(gamma+1)/soundspeed(s) * s->u), (2/(gamma-1)));
+  return s->rho * pow((2. + (gamma-1)/soundspeed(s) * s->u)/(gamma+1), (2/(gamma-1)));
   /* return s->rho * pow((2./(gamma+1) + (gamma-1)/(gamma+1)/soundspeed(s) * (s->u - S)), (2/(gamma-1))); */
 }
 
@@ -454,7 +506,7 @@ double p_fanL(pstate* s){
   /* Compute p inside rarefaction fan   */
   /* shortened version: S = x/t = 0     */
   /*------------------------------------*/
-  return s->p * pow((2/(gamma+1) + (gamma-1)/(gamma+1)/soundspeed(s) * (s->u)), (2*gamma/(gamma-1)));
+  return s->p * pow((2 + (gamma-1)/soundspeed(s) * (s->u))/(gamma+1), (2*gamma/(gamma-1)));
   /* return s->p * pow((2/(gamma+1) + (gamma-1)/(gamma+1)/soundspeed(s) * (s->u - S)), (2*gamma/(gamma-1))); */
 }
 

@@ -6,6 +6,8 @@
 
 
 extern int check_vacuum(pstate *left, pstate *right);
+extern void compute_fluxes();
+extern void compute_intercell_states();
 extern void compute_star_pstate(pstate *left, pstate *right, pstate* starL, pstate* starR);
 extern double compute_pstar(pstate *left, pstate *right);
 extern double fp(double pguess, pstate *s, double gamma, double A, double B, double a);

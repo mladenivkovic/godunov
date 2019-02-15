@@ -3,6 +3,7 @@
 #include "gas.h"
 #include "godunov.h"
 #include "params.h"
+#include <math.h>
 
 #ifdef RIEMANN_EXACT
 #include "riemann-exact.h"
@@ -21,7 +22,6 @@ extern pstate* w_new;
 extern pstate* w_intercell;
 extern cstate* u_old;
 extern cstate* u_new;
-extern cstate* u_intercell;
 extern cstate* flux;
 extern params pars;
 extern double dx;
@@ -34,60 +34,6 @@ extern double *x;
 
 
 
-/* ===================================== */
-void compute_intercell_states(){
-/* ===================================== */
-  /* Compute intercell states, based on  */
-  /* whether we have vacuum or not       */
-  /* first compute primitives, then      */
-  /* convert to conserved variables      */
-  /*-------------------------------------*/
-
-  pstate left, right, starL, starR;
-
-  for (int i = 2; i<pars.nx+3; i++){
-    left = w_old[i-1];
-    right = w_old[i];
-    int vacuum = check_vacuum(&left, &right);
-
-    if (vacuum){
-      compute_riemann_vacuum(&left, &right, &w_intercell[i]);
-    }
-    else {
-      compute_star_pstate(&left, &right, &starL, &starR);
-      compute_riemann(&left, &right, &starL, &starR, &w_intercell[i]);
-    }
-
-    u_intercell[i].rho = w_intercell[i].rho;
-    u_intercell[i].rhou = w_intercell[i].rho * w_intercell[i].u;
-    u_intercell[i].E = energy(&w_intercell[i]);
-  }
-
-}
-
-
-
-
-/* =================================== */
-void compute_fluxes(){
-/* =================================== */
-  /* compute the intercell fluxes      */
-  /* fluxes are for conserved          */
-  /* variables, not primitives!!!!     */
-  /*-----------------------------------*/
-
-  for (int i=1; i<pars.nx+3; i++){
-    pstate ic = w_intercell[i];
-
-    flux[i].rho = ic.rho * ic.u;
-    flux[i].rhou = ic.rho * ic.u*ic.u + ic.p;
-    flux[i].E = ic.u*(energy(&ic) + ic.p);
-
-  }
-}
-
-
-
 /* ================================ */
 void compute_conserved_states(){
 /* ================================ */
@@ -95,7 +41,7 @@ void compute_conserved_states(){
   /* primitive states               */
   /*--------------------------------*/
 
-  for (int i = 0; i<pars.nx+4; i++){
+  for (int i=0; i<pars.nx+NBCT; i++){
     u_old[i].rho = w_old[i].rho;
     u_old[i].rhou = w_old[i].rho * w_old[i].u;
     u_old[i].E = energy(&w_old[i]);
@@ -112,7 +58,7 @@ void compute_new_states(){
 
   double dtdx = dt/dx;
 
-  for (int i=2; i<pars.nx+2; i++){
+  for (int i=NBC; i<pars.nx+NBCT; i++){
     u_new[i].rho = u_old[i].rho + dtdx*(flux[i].rho - flux[i+1].rho);
     u_new[i].rhou = u_old[i].rhou + dtdx*(flux[i].rhou - flux[i+1].rhou);
     u_new[i].E = u_old[i].E + dtdx*(flux[i].E - flux[i+1].E);
@@ -125,28 +71,59 @@ void compute_new_states(){
 }
 
 
+
+/* ================================= */
+double compute_dt(){
+/* ================================= */
+  /* Compute new dt                  */
+  /*---------------------------------*/
+
+  double vmax = 0;
+  
+  for (int i = NBC; i<pars.nx+NBCT; i++){
+#ifdef RIEMANN_HLL
+    double SL, SR;
+    compute_wave_speeds(u_old[i-1], u_old[i], &SL, &SR);
+    if (fabs(SL)>vmax) vmax = fabs(SL);
+    if (fabs(SR)>vmax) vmax = fabs(SR);
+#else
+    double u, a, S;
+    u = w_old[i].u;
+    a = soundspeed(&w_old[i]);
+    S = fabs(u)+a;
+    if (S>vmax) vmax = S;
+#endif
+  }
+  
+  return(pars.ccfl * dx/vmax);
+
+
+}
+
+
 /* ==========================*/
 void set_boundaries(){
 /* ==========================*/
   /* Set boundary conditions */
   /*-------------------------*/
 
+  /* ----------------------- */
   /* transmissive boundaries */
+  /* ----------------------- */
 
-  w_old[0].rho = w_old[3].rho;
-  w_old[0].u = w_old[3].u;
-  w_old[0].p = w_old[3].p;
+  int re = pars.nx+NBC; /* right edge of actual sim */
 
-  w_old[1].rho = w_old[2].rho;
-  w_old[1].u = w_old[2].u;
-  w_old[1].p = w_old[2].p;
+  if (NBC==0) return;
+  for (int i=0; i<NBC; i++){
+    /* left boundary    */
+    w_old[NBC+i].rho = w_old[NBC-i-1].rho;
+    w_old[NBC+i].u = w_old[NBC-i-1].u;
+    w_old[NBC+i].p = w_old[NBC-i-1].p;
 
-  w_old[pars.nx+2].rho = w_old[pars.nx+1].rho;
-  w_old[pars.nx+2].u = w_old[pars.nx+1].u;
-  w_old[pars.nx+2].p = w_old[pars.nx+1].p;
-
-  w_old[pars.nx+3].rho = w_old[pars.nx].rho;
-  w_old[pars.nx+3].u = w_old[pars.nx].u;
-  w_old[pars.nx+3].p = w_old[pars.nx].p;
-
+    /* right boundary   */
+    w_old[re+i].rho = w_old[re-i-1].rho;
+    w_old[re+i].u = w_old[re-i-1].u;
+    w_old[re+i].p = w_old[re-i-1].p;
+  }
+ 
 }

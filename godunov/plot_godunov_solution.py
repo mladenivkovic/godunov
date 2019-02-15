@@ -35,7 +35,8 @@ def read_cmdlineargs():
 
     global srcdir, filebase
     try:
-        srcdir = sys.argv[1];
+        srcdir = sys.argv[1].strip();
+        print("srcdir:", srcdir)
     except IndexError:
         print(usage)
         quit()
@@ -50,14 +51,10 @@ def read_cmdlineargs():
 
         else:
             # remove whitespaces and trailing slash
-            srcdir = srcdir.strip()
-            srcdir = os.path.dirname(srcdir)
+            if srcdir[-1]=='/':
+                srcdir = os.path.dirname(srcdir)
             junk, filebase = os.path.split(srcdir)
 
-            if srcdir[-1] == '/':
-                srcdir = srcdir[:-1]
-
-        
 
     return
 
@@ -77,7 +74,6 @@ def get_noutputs():
         if f.endswith('.out'):
             if (f.startswith(filebase)):
                 noutputs += 1
-    print("noutputs", noutputs, "in srcdir", srcdir, "for filebase", filebase)
 
     return
 

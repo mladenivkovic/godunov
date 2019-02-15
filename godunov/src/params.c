@@ -58,6 +58,7 @@ void print_params(){
     printf("False\n");
   }
   printf("gamma:                   %g\n", gamma);
+  printf("C_cfl:                   %g\n", pars.ccfl);
 
   printf("==================================================\n");
 
