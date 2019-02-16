@@ -51,8 +51,7 @@ usage:
 
 
 # globals
-solvers = ['EXACT', 'TRRS']
-#  solvers = ['EXACT', 'TRRS', 'TSRS']
+solvers = ['EXACT', 'TRRS', 'TSRS']
 
 srcdir = ''
 filebase = ''

@@ -64,11 +64,11 @@ fi
 
 
 #---------------------------------------------
-# for SOLVER in HLL; do
-# for SOLVER in TSRS; do
+for SOLVER in HLL; do
+# for SOLVER in TRRS; do
 # for SOLVER in EXACT; do
 # for SOLVER in EXACT TRRS; do
-for SOLVER in EXACT TRRS TSRS; do
+# for SOLVER in EXACT TRRS TSRS; do
 #---------------------------------------------
 
     sed -i "s/^RIEMANN=.*/RIEMANN=${SOLVER}/" Makefile
@@ -100,12 +100,11 @@ for SOLVER in EXACT TRRS TSRS; do
     if [ "$noplot" = false ]; then ../plot_godunov_solution.py $SOLVER/sod_test_modified ; fi;
 
     genparamfile 0 0.2 0
-    # genparamfile 30 0.2 5
     rm -r $SOLVER/123problem
     ./godunov paramfile.txt ../ic/123problem.dat
     if [ "$noplot" = false ]; then ../plot_godunov_solution.py $SOLVER/123problem ; fi;
 
-    genparamfile 0 0.025 0
+    genparamfile 0 0.025 100
     rm -r $SOLVER/left_blast_wave
     ./godunov paramfile.txt ../ic/left_blast_wave.dat
     if [ "$noplot" = false ]; then ../plot_godunov_solution.py $SOLVER/left_blast_wave ; fi;
@@ -119,8 +118,8 @@ for SOLVER in EXACT TRRS TSRS; do
     rm -r $SOLVER/two_shocks
     ./godunov paramfile.txt ../ic/two_shocks.dat
     if [ "$noplot" = false ]; then ../plot_godunov_solution.py $SOLVER/two_shocks ; fi;
-
-    # # # genparamfile 0 0.2 0
+    #
+    # # genparamfile 0 0.2 0
     # # rm -r $SOLVER/left_vacuum
     # # ./godunov paramfile.txt ../ic/left_vacuum.dat
     # # if [ "$noplot" = false ]; then ../plot_godunov_solution.py $SOLVER/left_vacuum ; fi;

@@ -159,6 +159,7 @@ int main(int argc, char* argv[]){
     dt=compute_dt(dx);
 /* TODO remove */
 /* dt = 0.01; */
+    if (step <=5) dt *= 0.2; /* sometimes there might be trouble with sharp discontinuities at the beginning, so reduce the timestep for the first few steps */
     if (t+dt > pars.tmax) dt = pars.tmax-t;
 
     compute_new_states();
