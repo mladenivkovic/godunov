@@ -36,7 +36,6 @@ def read_cmdlineargs():
     global srcdir, filebase
     try:
         srcdir = sys.argv[1].strip();
-        print("srcdir:", srcdir)
     except IndexError:
         print(usage)
         quit()

@@ -48,7 +48,7 @@ void compute_intercell_states(){
 
   pstate left, right, starL, starR;
 
-  for(int i = NBC; i<pars.nx+NBCT; i++){
+  for(int i = 1; i<pars.nx+NBCT; i++){
     left = w_old[i-1];
     right = w_old[i];
 

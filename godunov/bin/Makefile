@@ -11,7 +11,7 @@
 EXEC=godunov  # executable name
 SRCDIR=../src
 
-RIEMANN=EXACT
+RIEMANN=TSRS
 
 RIEMANNFILE=riemann.o
 ifeq ($(RIEMANN), EXACT)
@@ -89,5 +89,5 @@ $(EXEC): $(OBJECTS)
 .PHONY: clean # keeps makefile from doing something with a file named clean
 
 clean:
-	rm -f $(OBJECTS) $(EXEC)
+	rm -f $(OBJECTS) $(EXEC) riemann*.o
 

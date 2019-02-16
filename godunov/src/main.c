@@ -82,9 +82,10 @@ int main(int argc, char* argv[]){
 
 
 
-  /* allocate memory for pstate arrays */
+  /*----------------------------------*/
+  /* allocate memory for state arrays */
   /* leave extra space for boundaries */
-  /* initialize values                */
+  /*----------------------------------*/
 
   x =           malloc((pars.nx+NBCT)*sizeof(double));
   w_old =       malloc((pars.nx+NBCT)*sizeof(pstate));
@@ -95,23 +96,43 @@ int main(int argc, char* argv[]){
   u_new =       malloc((pars.nx+NBCT)*sizeof(cstate));
   flux =        malloc((pars.nx+NBCT)*sizeof(cstate));
 
+  /*----------------------------------*/
+  /* initialize values                */
+  /*----------------------------------*/
+
   dx = 2./((double) pars.nx);
   x[0] = -1-NBC*dx;
   for (int i=1; i<pars.nx+NBCT; i++){
     x[i] = x[i-1]+dx;
   }
+  double boundary = 0.0; /* separating left and right initial states */
 
-  for (int i=0; i<pars.nx+NBCT; i++){
-    if (x[i]<0.0) {
-      w_old[i].rho = left.rho;
-      w_old[i].u   = left.u;
-      w_old[i].p   = left.p;
+  /* use these in case you want to mimic Toro's E1GODS solver from NUMERICA */
+  /* dx = 1./((double) pars.nx); */
+  /* x[0] = -NBC*dx; */
+  /* for (int i=1; i<pars.nx+NBCT; i++){ */
+  /*   x[i] = x[i-1]+dx; */
+  /* } */
+  /* double boundary = 0.3;  [> separating left and right initial states <] */
+ 
+
+  if (pars.twopstate_ic){
+    for (int i=0; i<pars.nx+NBCT; i++){
+      if (x[i]<=boundary) {
+        w_old[i].rho = left.rho;
+        w_old[i].u   = left.u;
+        w_old[i].p   = left.p;
+      }
+      else {
+        w_old[i].rho = right.rho;
+        w_old[i].u   = right.u;
+        w_old[i].p   = right.p;
+      }
     }
-    else {
-      w_old[i].rho = right.rho;
-      w_old[i].u   = right.u;
-      w_old[i].p   = right.p;
-    }
+  }
+  else{
+    printf("Can't handle non-Riemann initial conditions yet...\n");
+    exit(0);
   }
 
 
@@ -123,6 +144,7 @@ int main(int argc, char* argv[]){
   if (pars.verbose) printf("Writing initial output\n");
   write_output(outcount, t, x, w_old);
 
+  compute_conserved_states();
 
   /* -------------------- */
   /*   Main loop          */
@@ -133,12 +155,31 @@ int main(int argc, char* argv[]){
     step += 1;
     outputstep += 1;
 
-    compute_conserved_states();
     compute_fluxes();
     dt=compute_dt(dx);
+/* TODO remove */
+/* dt = 0.01; */
     if (t+dt > pars.tmax) dt = pars.tmax-t;
 
     compute_new_states();
+
+/* TODO remove */
+/* printf("U_OLD\n"); */
+/* for (int i=NBC; i<pars.nx+NBCT; i++){ */
+/*   printf("%lf \t %lf \t %lf \n", u_old[i].rho, u_old[i].rhou, u_old[i].E); */
+/* } */
+/* printf("\n===================================================================\n"); */
+/* printf("U_NEW\n"); */
+/* for (int i=NBC; i<pars.nx+NBCT; i++){ */
+/*   printf("%lf \t %lf \t %lf \n", u_new[i].rho, u_new[i].rhou, u_new[i].E); */
+/* } */
+/* printf("\n===================================================================\n"); */
+/* printf("FLUXES\n"); */
+/* for (int i=NBC; i<pars.nx+NBCT-1; i++){ */
+/*   printf("%lf \t %lf \t %lf \t %lf \t %lf \t %lf \n", flux[i].rho, flux[i].rhou, flux[i].E, flux[i+1].rho, flux[i+1].rhou, flux[i+1].E); */
+/* } */
+
+
 
     /* swap new states with the old ones */
     pstate *ptemp = w_old;
@@ -149,16 +190,17 @@ int main(int argc, char* argv[]){
     u_old = u_new;
     u_new = ctemp;
 
-    for (int i=NBC; i<pars.nx+NBCT; i++){
-      w_new[i].rho = 0;
-      w_new[i].u = 0;
-      w_new[i].p = 0;
-      u_new[i].rho = 0;
-      u_new[i].rhou = 0;
-      u_new[i].E = 0;
-    }
+    /* for (int i=NBC; i<pars.nx+NBCT; i++){ */
+    /*   w_new[i].rho = 0; */
+    /*   w_new[i].u = 0; */
+    /*   w_new[i].p = 0; */
+    /*   u_new[i].rho = 0; */
+    /*   u_new[i].rhou = 0; */
+    /*   u_new[i].E = 0; */
+    /* } */
 
     set_boundaries();
+
 
     t += dt;
     if (pars.verbose) printf("Finished step %d at t = %10.6lf    dt = %10.6lf\n", step, t, dt);

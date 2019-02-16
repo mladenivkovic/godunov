@@ -5,6 +5,7 @@
 #include <sys/types.h>
 
 #include "gas.h"
+#include "godunov.h"
 #include "params.h"
 
 #ifdef RIEMANN_EXACT
@@ -312,7 +313,7 @@ void write_output(int step, double t, double* x, pstate* s){
   FILE *outfilep = fopen(filename, "w");
   fprintf(outfilep, "t = %10.4lf\n", t);
   fprintf(outfilep, "%12s %12s %12s %12s\n", "x", "rho", "u", "p");
-  for (int i=2; i<pars.nx+2; i++){
+  for (int i=NBC; i<pars.nx+NBC; i++){
     fprintf(outfilep, "%12.5lf %12.5lf %12.5lf %12.5lf\n", x[i], s[i].rho, s[i].u, s[i].p);
   }
   fclose(outfilep);

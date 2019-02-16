@@ -1,5 +1,18 @@
 #!/bin/bash
 
+#-------------------------------------------
+# Automatically compile and run the godunov
+# program with all solvers and various IC
+# files.
+# Unless you specify noplot, it will also
+# plot the solutions in the directory of 
+# each output. To skip plotting, use any of the
+# cmd line args
+# -n | -np | --np | --noplot | noplot | no | n | np)
+#----------------------------------------
+
+
+
 
 #===================================
 genparamfile() {
@@ -15,7 +28,7 @@ genparamfile() {
     echo "verbose = 1"  >> $f
     echo "nx = 100"     >> $f
     echo "gamma = 1.4"  >> $f
-    echo "ccfl = 0.1"   >> $f
+    echo "ccfl = 0.9"   >> $f
     echo "nsteps = $1"  >> $f
     echo "tmax = $2"    >> $f
     echo "foutput = $3" >> $f
@@ -23,12 +36,39 @@ genparamfile() {
 
 
 
+#=====================================
+# Check for noplot cmd line arg
+#=====================================
+noplot=false
+if [[ $# > 0 ]]; then
+    case $1 in
+
+        -n | -np | --np | --noplot | noplot | no | n | np)
+            noplot=true
+        ;;
+        
+        *)
+            echo "unrecognized cmd line param '" $1 "'" 
+            exit
+        ;;
+
+    esac
+fi
+
+
+
+
+#========================================
+# MAIN LOOP
+#========================================
+
+
 #---------------------------------------------
 # for SOLVER in HLL; do
 # for SOLVER in TSRS; do
-for SOLVER in EXACT; do
+# for SOLVER in EXACT; do
 # for SOLVER in EXACT TRRS; do
-# for SOLVER in EXACT TRRS TSRS; do
+for SOLVER in EXACT TRRS TSRS; do
 #---------------------------------------------
 
     sed -i "s/^RIEMANN=.*/RIEMANN=${SOLVER}/" Makefile
@@ -52,48 +92,48 @@ for SOLVER in EXACT; do
     genparamfile 0 1 0
     rm -r $SOLVER/sod_test
     ./godunov paramfile.txt ../ic/sod_test.dat
-    ../plot_godunov_solution.py $SOLVER/sod_test
+    if [ "$noplot" = false ]; then ../plot_godunov_solution.py $SOLVER/sod_test ; fi;
 
     genparamfile 0 0.1 0
     rm -r $SOLVER/sod_test_modified
     ./godunov paramfile.txt ../ic/sod_test_modified.dat
-    ../plot_godunov_solution.py $SOLVER/sod_test_modified
+    if [ "$noplot" = false ]; then ../plot_godunov_solution.py $SOLVER/sod_test_modified ; fi;
 
     genparamfile 0 0.2 0
     # genparamfile 30 0.2 5
     rm -r $SOLVER/123problem
     ./godunov paramfile.txt ../ic/123problem.dat
-    ../plot_godunov_solution.py $SOLVER/123problem
+    if [ "$noplot" = false ]; then ../plot_godunov_solution.py $SOLVER/123problem ; fi;
 
     genparamfile 0 0.025 0
     rm -r $SOLVER/left_blast_wave
     ./godunov paramfile.txt ../ic/left_blast_wave.dat
-    ../plot_godunov_solution.py $SOLVER/left_blast_wave
+    if [ "$noplot" = false ]; then ../plot_godunov_solution.py $SOLVER/left_blast_wave ; fi;
 
     genparamfile 0 0.1 0
     rm -r $SOLVER/right_blast_wave
     ./godunov paramfile.txt ../ic/right_blast_wave.dat
-    ../plot_godunov_solution.py $SOLVER/right_blast_wave
+    if [ "$noplot" = false ]; then ../plot_godunov_solution.py $SOLVER/right_blast_wave ; fi;
 
     genparamfile 0 0.1 0
     rm -r $SOLVER/two_shocks
     ./godunov paramfile.txt ../ic/two_shocks.dat
-    ../plot_godunov_solution.py $SOLVER/two_shocks
-    #
+    if [ "$noplot" = false ]; then ../plot_godunov_solution.py $SOLVER/two_shocks ; fi;
+
     # # # genparamfile 0 0.2 0
     # # rm -r $SOLVER/left_vacuum
     # # ./godunov paramfile.txt ../ic/left_vacuum.dat
-    # # ../plot_godunov_solution.py $SOLVER/left_vacuum
+    # # if [ "$noplot" = false ]; then ../plot_godunov_solution.py $SOLVER/left_vacuum ; fi;
     #
     # # genparamfile 0 0.2 0
     # # rm -r $SOLVER/right_vacuum
     # # ./godunov paramfile.txt ../ic/right_vacuum.dat
-    # # ../plot_godunov_solution.py $SOLVER/right_vacuum
+    # # if [ "$noplot" = false ]; then ../plot_godunov_solution.py $SOLVER/right_vacuum ; fi;
     #
     # # genparamfile 0 0.2 0
     # # rm -r $SOLVER/vacuum_generating
     # # ./godunov paramfile.txt ../ic/vacuum_generating.dat
-    # # ../plot_godunov_solution.py $SOLVER/vacuum_generating
+    # # if [ "$noplot" = false ]; then ../plot_godunov_solution.py $SOLVER/vacuum_generating ; fi;
     #
     #
 done;
