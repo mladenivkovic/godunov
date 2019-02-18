@@ -91,7 +91,7 @@ double compute_dt(){
   double vmax = 0;
   
   for (int i = NBC; i<pars.nx+NBC; i++){
-#ifdef RIEMANN_HLL
+#ifdef HLL
     double SL, SR;
     compute_wave_speeds(u_old[i-1], u_old[i], &SL, &SR);
     if (fabs(SL)>vmax) vmax = fabs(SL);

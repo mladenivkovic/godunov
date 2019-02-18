@@ -9,7 +9,7 @@
 
 extern double gamma;
 extern params pars;
-/* extern double* x; */
+extern double* x;
 /* extern double t; */
 extern cstate* flux;
 extern cstate* u_old;
@@ -58,16 +58,17 @@ void compute_fluxes(){
       flux[i].rhou = fr.rhou;
       flux[i].E = fr.E;
     }
+
+    /* TODO: temporary checks */
+    /* printf("Got flux for x=%lf: SL= %lf\t SR=%lf \t",x[i], SL, SR); */
+    /* printf("%lf \t %lf \t %lf \n", flux[i].rho, flux[i].rhou , flux[i].E); */
+    /* printf("%lf \t %lf \t %lf \n", u_old[pars.nx+NBC-1].rho, u_old[pars.nx+NBC-1].rhou , u_old[pars.nx+NBC-1].E); */
+    /* printf("%lf \t %lf \t %lf \n", u_old[pars.nx+NBC].rho, u_old[pars.nx+NBC].rhou , u_old[pars.nx+NBC].E); */
+    /* printf("%lf \t %lf \t %lf \n", w_old[pars.nx+NBC-1].rho, w_old[pars.nx+NBC-1].u , w_old[pars.nx+NBC-1].p); */
+    /* printf("%lf \t %lf \t %lf \n", w_old[pars.nx+NBC].rho, w_old[pars.nx+NBC].u , w_old[pars.nx+NBC].p); */
+    /* printf("-----------------------------\n"); */
   }
 
-/* TODO: temp */
-/* printf("Last flux: SL= %lf\t SR=%lf\n", SL, SR); */
-/* printf("%lf \t %lf \t %lf \n", flux[pars.nx+NBC].rho, flux[pars.nx+NBC].rhou , flux[pars.nx+NBC].E); */
-/* printf("%lf \t %lf \t %lf \n", u_old[pars.nx+NBC-1].rho, u_old[pars.nx+NBC-1].rhou , u_old[pars.nx+NBC-1].E); */
-/* printf("%lf \t %lf \t %lf \n", u_old[pars.nx+NBC].rho, u_old[pars.nx+NBC].rhou , u_old[pars.nx+NBC].E); */
-/* printf("%lf \t %lf \t %lf \n", w_old[pars.nx+NBC-1].rho, w_old[pars.nx+NBC-1].u , w_old[pars.nx+NBC-1].p); */
-/* printf("%lf \t %lf \t %lf \n", w_old[pars.nx+NBC].rho, w_old[pars.nx+NBC].u , w_old[pars.nx+NBC].p); */
-/* printf("-----------------------------\n"); */
 
 }
 
@@ -124,9 +125,13 @@ void compute_wave_speeds(cstate left, cstate right, double* SL, double* SR){
 
   double utilde = (sqrtrl * ul + sqrtrr*ur)/(sqrtrl+sqrtrr);
   double Htilde = (sqrtrl * Hl + sqrtrr*Hr)/(sqrtrl+sqrtrr);
-  double atilde = sqrt((gamma-1)*(Htilde-0.5*utilde*utilde));
+  double temp = fabs(Htilde - 0.5*utilde*utilde); /* me trying to fix nans. Setting it to 0 also doesn't help.*/
+  double atilde = sqrt((gamma-1)*(temp));
 
   *SL = utilde - atilde;
   *SR = utilde + atilde;
+
+  /* TODO: temporary checks */
+  /* printf("Computing wave speeds: utilde=%lf\tatilde=%lf\t rhol=%lf rhor=%lf\n", utilde, atilde, left.rho, right.rho); */
 
 }

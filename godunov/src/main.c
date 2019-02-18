@@ -28,6 +28,13 @@
 #endif
 
 
+#ifdef RIEMANN_HLL
+#define HLL
+#endif
+#ifdef RIEMANN_HLLC
+#define HLL
+#endif
+
 
 double gamma = 1.4;   /* Ratio of specific heats; Adiabatic exponent... */
 
@@ -160,27 +167,21 @@ int main(int argc, char* argv[]){
     compute_fluxes();
     dt=compute_dt(dx);
     if (step <=5) dt *= 0.2; /* sometimes there might be trouble with sharp discontinuities at the beginning, so reduce the timestep for the first few steps */
-/* TODO remove */
-/* dt = 0.005; */
+#ifdef HLL
+    /* hack for 123problem with HLL type solvers.
+     * The wave speed estimates are not really stable
+     * and might produce really weird stuff.
+     *
+     * instead, end the run here.                     */
+    if (dt==0) {
+      printf("Encountered error: dt = 0. Stopping here.\n");
+      dt=pars.tmax;
+    }
+#endif
     if (t+dt > pars.tmax) dt = pars.tmax-t;
 
     compute_new_states();
 
-/* TODO remove */
-/* printf("U_OLD\n"); */
-/* for (int i=NBC; i<pars.nx+NBCT; i++){ */
-/*   printf("%lf \t %lf \t %lf \n", u_old[i].rho, u_old[i].rhou, u_old[i].E); */
-/* } */
-/* printf("\n===================================================================\n"); */
-/* printf("U_NEW\n"); */
-/* for (int i=NBC; i<pars.nx+NBCT; i++){ */
-/*   printf("%lf \t %lf \t %lf \n", u_new[i].rho, u_new[i].rhou, u_new[i].E); */
-/* } */
-/* printf("\n===================================================================\n"); */
-/* printf("FLUXES\n"); */
-/* for (int i=NBC; i<pars.nx+NBCT-1; i++){ */
-/*   printf("%lf \t %lf \t %lf \t %lf \t %lf \t %lf \n", flux[i].rho, flux[i].rhou, flux[i].E, flux[i+1].rho, flux[i+1].rhou, flux[i+1].E); */
-/* } */
 
 
 
@@ -192,17 +193,6 @@ int main(int argc, char* argv[]){
     cstate *ctemp = u_old;
     u_old = u_new;
     u_new = ctemp;
-
-    /* for (int i=NBC; i<pars.nx+NBCT; i++){ */
-    /*   w_new[i].rho = 0; */
-    /*   w_new[i].u = 0; */
-    /*   w_new[i].p = 0; */
-    /*   u_new[i].rho = 0; */
-    /*   u_new[i].rhou = 0; */
-    /*   u_new[i].E = 0; */
-    /* } */
-
-
 
     t += dt;
     if (pars.verbose) printf("Finished step %d at t = %10.6lf    dt = %10.6lf\n", step, t, dt);

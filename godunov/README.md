@@ -25,3 +25,11 @@ twopstate_ic = 1 // If initial conditions contain Riemann-style only two neighbo
                  // currently this is the only implemented option.
 
 ```
+
+
+NOTE: The methods used can be disappointingly inaccurate.
+For example, if you let most of the simulations run to an end time longer then
+currently specified in the ./bin/run.sh file, some weird stuff happens. Especially
+for the 123 problem and the two shocks problem.
+Also, for the HLL solver, the wave speed estimates aren't good for the 123problem.
+It'll produce NANs because it produces negative densities :( 

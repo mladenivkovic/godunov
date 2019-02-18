@@ -232,7 +232,6 @@ def tweak_and_save_plot():
     ax2.set_title(filebase+" at t = 0.000")
     ax5.set_title(filebase+" at t = %5.3f" % t)
 
-    ax3.legend()
     ax6.legend()
 
 

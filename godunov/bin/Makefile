@@ -11,7 +11,7 @@
 EXEC=godunov  # executable name
 SRCDIR=../src
 
-RIEMANN=HLL
+RIEMANN=HLLC
 
 RIEMANNFILE=riemann.o
 ifeq ($(RIEMANN), EXACT)

@@ -1,20 +1,11 @@
 /* all stuff concerning Riemann problem */
 
-#ifndef RIEMANN_TSRS_H
-#define RIEMANN_TSRS_H
+#ifndef RIEMANN_HLLC_H
+#define RIEMANN_HLLC_H
 #include "gas.h"
 
-
-extern int check_vacuum(pstate *left, pstate *right);
-extern void compute_star_pstate(pstate *left, pstate *right, pstate* starL, pstate* starR);
-extern double compute_pstar(pstate *left, pstate *right);
-extern double rho_star(pstate *s, pstate *star);
 extern void compute_riemann(pstate* left, pstate* right, pstate* starL, pstate* starR, pstate* intercell);
-extern void compute_riemann_vacuum(pstate* left, pstate* right, pstate* intercell);
-extern double rho_fanL(pstate* s);
-extern double u_fanL(pstate* s);
-extern double p_fanL(pstate* s);
-extern double rho_fanR(pstate* s);
-extern double u_fanR(pstate* s);
-extern double p_fanR(pstate* s);
+extern void compute_fluxes();
+extern void compute_wave_speeds(cstate left, cstate right,  double* SL, double* SR);
+extern void Fhllc(double Sstar, double Sk, pstate wk, cstate uk, cstate fk, cstate* flux);
 #endif

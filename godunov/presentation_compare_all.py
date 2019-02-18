@@ -51,7 +51,7 @@ usage:
 
 
 # globals
-solvers = ['EXACT', 'TRRS', 'TSRS', 'HLL']
+solvers = ['EXACT', 'TRRS', 'TSRS', 'HLL', 'HLLC']
 
 srcdir = ''
 filebase = ''
@@ -248,7 +248,6 @@ def tweak_and_save_plot():
     ax2.set_title(filebase+" at t = 0.000")
     ax5.set_title(filebase+" at t = %5.3f" % t)
 
-    ax3.legend()
     ax6.legend()
 
 
@@ -260,7 +259,7 @@ def tweak_and_save_plot():
 
     plt.tight_layout(rect=(0,0,1,0.95))
     print("saving figure", fname)
-    plt.savefig(fname, dpi=72)
+    plt.savefig(fname, dpi=300)
     plt.close()
 
 
