@@ -27,7 +27,7 @@ void compute_fluxes(){
 
   double SL = 0;
   double SR = 0;
-  for (int i=NBC+1; i<pars.nx+NBCT; i++){
+  for (int i=NBC; i<pars.nx+NBCT; i++){
     cstate left = u_old[i-1];
     cstate right = u_old[i];
     compute_wave_speeds(left, right, &SL, &SR);
@@ -59,6 +59,16 @@ void compute_fluxes(){
       flux[i].E = fr.E;
     }
   }
+
+/* TODO: temp */
+/* printf("Last flux: SL= %lf\t SR=%lf\n", SL, SR); */
+/* printf("%lf \t %lf \t %lf \n", flux[pars.nx+NBC].rho, flux[pars.nx+NBC].rhou , flux[pars.nx+NBC].E); */
+/* printf("%lf \t %lf \t %lf \n", u_old[pars.nx+NBC-1].rho, u_old[pars.nx+NBC-1].rhou , u_old[pars.nx+NBC-1].E); */
+/* printf("%lf \t %lf \t %lf \n", u_old[pars.nx+NBC].rho, u_old[pars.nx+NBC].rhou , u_old[pars.nx+NBC].E); */
+/* printf("%lf \t %lf \t %lf \n", w_old[pars.nx+NBC-1].rho, w_old[pars.nx+NBC-1].u , w_old[pars.nx+NBC-1].p); */
+/* printf("%lf \t %lf \t %lf \n", w_old[pars.nx+NBC].rho, w_old[pars.nx+NBC].u , w_old[pars.nx+NBC].p); */
+/* printf("-----------------------------\n"); */
+
 }
 
 
@@ -90,7 +100,7 @@ double Fhll(double ul, double ur, double fl, double fr, double SL, double SR){
 /* ============================================================================= */
   /* compute hll Flux for a single component                                     */
   /*-----------------------------------------------------------------------------*/
-  return (SR*fr - SL*fl + SL*SR*(ur - ul))/(SR - SL);
+  return (SR*fl - SL*fr + SL*SR*(ur - ul))/(SR - SL);
 }
 
 

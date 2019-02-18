@@ -14,6 +14,7 @@ extern params pars;
 extern pstate* w_old;
 extern pstate* w_intercell;
 extern cstate* flux;
+extern cstate* u_old;
 /* extern double t; */
 
 

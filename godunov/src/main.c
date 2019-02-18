@@ -155,11 +155,13 @@ int main(int argc, char* argv[]){
     step += 1;
     outputstep += 1;
 
+    set_boundaries();
+
     compute_fluxes();
     dt=compute_dt(dx);
-/* TODO remove */
-/* dt = 0.01; */
     if (step <=5) dt *= 0.2; /* sometimes there might be trouble with sharp discontinuities at the beginning, so reduce the timestep for the first few steps */
+/* TODO remove */
+/* dt = 0.005; */
     if (t+dt > pars.tmax) dt = pars.tmax-t;
 
     compute_new_states();
@@ -200,7 +202,6 @@ int main(int argc, char* argv[]){
     /*   u_new[i].E = 0; */
     /* } */
 
-    set_boundaries();
 
 
     t += dt;

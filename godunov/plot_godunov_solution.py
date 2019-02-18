@@ -138,7 +138,7 @@ def plot_results(out):
 
     fname = os.path.join(srcdir, filebase + "-" + str(out).zfill(2) + '.png')
     plt.tight_layout(rect=(0,0,1,0.95))
-    plt.savefig(fname, dpi=300)
+    plt.savefig(fname, dpi=72)
     plt.close()
 
 

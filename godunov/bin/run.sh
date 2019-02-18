@@ -64,11 +64,12 @@ fi
 
 
 #---------------------------------------------
-for SOLVER in HLL; do
+# for SOLVER in HLL; do
 # for SOLVER in TRRS; do
 # for SOLVER in EXACT; do
 # for SOLVER in EXACT TRRS; do
 # for SOLVER in EXACT TRRS TSRS; do
+for SOLVER in EXACT TRRS TSRS HLL; do
 #---------------------------------------------
 
     sed -i "s/^RIEMANN=.*/RIEMANN=${SOLVER}/" Makefile
@@ -82,13 +83,14 @@ for SOLVER in HLL; do
 
 
 
-    # genparamfile 1 1 20
-    # rm -r $SOLVER/sod_test
-    # ./godunov paramfile.txt ../ic/sod_test.dat
-    # gdb --args ./godunov paramfile.txt ../ic/sod_test.dat
-    # valgrind ./godunov paramfile.txt ../ic/sod_test.dat
-    # ../plot_godunov_solution.py $SOLVER/sod_test
+    # genparamfile 20 1 1
+    # rm -r $SOLVER/sod_test_modified
+    # ./godunov paramfile.txt ../ic/sod_test_modified.dat
+    # # gdb --args ./godunov paramfile.txt ../ic/sod_test_modified.dat
+    # valgrind ./godunov paramfile.txt ../ic/sod_test_modified.dat
+    # ../plot_godunov_solution.py $SOLVER/sod_test_modified
 
+    # 30 lines down to (un)comment
     genparamfile 0 1 0
     rm -r $SOLVER/sod_test
     ./godunov paramfile.txt ../ic/sod_test.dat
@@ -114,11 +116,11 @@ for SOLVER in HLL; do
     ./godunov paramfile.txt ../ic/right_blast_wave.dat
     if [ "$noplot" = false ]; then ../plot_godunov_solution.py $SOLVER/right_blast_wave ; fi;
 
-    genparamfile 0 0.1 0
+    genparamfile 0 0.035 0
     rm -r $SOLVER/two_shocks
     ./godunov paramfile.txt ../ic/two_shocks.dat
     if [ "$noplot" = false ]; then ../plot_godunov_solution.py $SOLVER/two_shocks ; fi;
-    #
+
     # # genparamfile 0 0.2 0
     # # rm -r $SOLVER/left_vacuum
     # # ./godunov paramfile.txt ../ic/left_vacuum.dat

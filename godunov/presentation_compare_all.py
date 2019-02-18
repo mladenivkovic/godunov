@@ -51,7 +51,7 @@ usage:
 
 
 # globals
-solvers = ['EXACT', 'TRRS', 'TSRS']
+solvers = ['EXACT', 'TRRS', 'TSRS', 'HLL']
 
 srcdir = ''
 filebase = ''
@@ -260,7 +260,7 @@ def tweak_and_save_plot():
 
     plt.tight_layout(rect=(0,0,1,0.95))
     print("saving figure", fname)
-    plt.savefig(fname, dpi=300)
+    plt.savefig(fname, dpi=72)
     plt.close()
 
 

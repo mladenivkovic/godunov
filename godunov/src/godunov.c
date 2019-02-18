@@ -41,7 +41,7 @@ void compute_conserved_states(){
   /* primitive states               */
   /*--------------------------------*/
 
-  for (int i=NBC-1; i<pars.nx+NBCT; i++){
+  for (int i=NBC; i<pars.nx+NBCT; i++){
     u_old[i].rho = w_old[i].rho;
     u_old[i].rhou = w_old[i].rho * w_old[i].u;
     u_old[i].E = energy(&w_old[i]);
@@ -70,7 +70,7 @@ void compute_new_states(){
 /* printf("%lf \t %lf \t %lf \t %lf \t %lf \t %lf \n",flux[i].rho, flux[i].rhou, flux[i].E, flux[i+1].rho, flux[i+1].rhou, flux[i+1].E); */
 /* printf("%lf \t %lf \t %lf \n",u_new[i].rho, u_new[i].rhou, u_new[i].E); */
 /* printf("\n"); */
-
+/*  */
     w_new[i].rho = u_new[i].rho;
     w_new[i].u = u_new[i].rhou/u_new[i].rho;
     w_new[i].p = (gamma-1)*(u_new[i].E - 0.5*u_new[i].rhou*w_new[i].u);
@@ -144,7 +144,6 @@ void set_boundaries(){
     u_old[re+i].rho = u_old[re-i-1].rho;
     u_old[re+i].rhou = u_old[re-i-1].rhou;
     u_old[re+i].E = u_old[re-i-1].E;
-
   }
  
 }

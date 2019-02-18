@@ -2,7 +2,7 @@
 #define GODUNOV_H
 
 /* number of boundary cells */
-#define NBC 1
+#define NBC 4
 #define NBCT 2*NBC
 
 extern void compute_new_states();
